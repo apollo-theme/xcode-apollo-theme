@@ -1,8 +1,27 @@
-# Apollo for Xcode
+<h1 align="center">Xcode Apollo Theme</h1>
 
-Apollo is SonicTerm's high-contrast Gruvbox Dark Hard variant for Xcode 26, tuned for readable source, markup, debugger console, and status markers.
+<p align="center">Apollo brings a warm, high-contrast dark palette to Xcode 26 for readable source, markup, debugger output, and status feedback.</p>
 
-Repository: <https://github.com/apollo-theme/xcode-apollo-theme>
+<p align="center">
+  <a href="https://apollo-theme.github.io/#app-xcode"><img alt="Preview" src="https://img.shields.io/badge/Preview-open-fabd2f?style=flat-square&amp;labelColor=141617"></a>
+  <a href="https://github.com/apollo-theme/xcode-apollo-theme/actions/workflows/check.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/apollo-theme/xcode-apollo-theme/check.yml?branch=main&amp;style=flat-square&amp;label=CI&amp;color=b8bb26&amp;labelColor=141617"></a>
+  <a href="https://github.com/apollo-theme/xcode-apollo-theme/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/apollo-theme/xcode-apollo-theme?style=flat-square&amp;label=Release&amp;color=83a598&amp;labelColor=141617"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-8ec07c?style=flat-square&amp;labelColor=141617"></a>
+  <a href="https://developer.apple.com/xcode/"><img alt="Target: Xcode 26" src="https://img.shields.io/badge/target-Xcode%2026-d3869b?style=flat-square&amp;labelColor=141617"></a>
+  <a href="palette/apollo.json"><img alt="Canonical Apollo palette" src="https://img.shields.io/badge/palette-canonical-fabd2f?style=flat-square&amp;labelColor=141617"></a>
+</p>
+
+<p align="center">
+  <a href="https://apollo-theme.github.io/#app-xcode"><img alt="Simulated preview of Apollo in Xcode" src="https://raw.githubusercontent.com/apollo-theme/apollo-theme.github.io/main/previews/xcode.svg" width="960"></a>
+</p>
+<p align="center"><sub><strong>Simulated preview.</strong> Xcode chrome and typography may vary; inspect the installed native theme using the checks below.</sub></p>
+
+## Coverage
+
+- Xcode 26 source, markup, and debugger-console surfaces.
+- Selection, current line, insertion point, warnings, errors, and runtime issues.
+- Twenty-eight syntax roles following the installed Xcode 26 theme schema.
+- A generated native color-theme plist that does not edit Xcode preferences.
 
 ## Install and activate
 
@@ -15,7 +34,7 @@ cp Apollo.xccolortheme ~/Library/Developer/Xcode/UserData/FontAndColorThemes/
 
 Open Xcode and select **Settings → Themes → Apollo**. The file adds a color theme only; it does not edit Xcode preferences.
 
-## Visual inspection
+## Visual verification
 
 Inspect Swift, Objective-C/C, strings, numbers, comments, documentation comments, types, functions, macros, and URLs. Also inspect the debugger console, selection, current line, insertion point, warnings, errors, and runtime issues. Primary source should be `#cfbc97` on `#141617`, comments `#928374`, and warning/error markers `#fabd2f`/`#fb4934`.
 
@@ -29,7 +48,7 @@ rm ~/Library/Developer/Xcode/UserData/FontAndColorThemes/Apollo.xccolortheme
 
 Reopen Xcode and choose another theme if needed.
 
-## Development
+## Develop and validate
 
 The committed theme is generated from `palette/apollo.json` using only Python's standard library. Its 28 syntax roles mirror the installed Xcode 26 theme schema.
 
@@ -38,8 +57,9 @@ python3 scripts/generate.py
 python3 scripts/generate.py --check
 python3 scripts/check.py
 python3 -m unittest tests.test_theme.XcodeThemeTests.test_xcode_26_syntax_role_map -v
+plutil -lint Apollo.xccolortheme
 ```
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE). Copyright (c) 2026 D0n9X1n.
