@@ -1,6 +1,6 @@
 <h1 align="center">Xcode Apollo Theme</h1>
 
-<p align="center">Apollo brings a warm, high-contrast dark palette to Xcode 26 for readable source, markup, debugger output, and status feedback.</p>
+<p align="center">Apollo brings warm, high-contrast dark and light palettes to Xcode 26 for readable source, markup, debugger output, and status feedback.</p>
 
 <p align="center">
   <a href="https://apollo-theme.github.io/#app-xcode"><img alt="Preview" src="https://img.shields.io/badge/Preview-open-fabd2f?style=flat-square&amp;labelColor=141617"></a>
@@ -13,6 +13,7 @@
 
 <p align="center">
   <a href="https://apollo-theme.github.io/#app-xcode"><img alt="Simulated preview of Apollo in Xcode" src="https://raw.githubusercontent.com/apollo-theme/apollo-theme.github.io/main/previews/xcode.svg" width="960"></a>
+  <a href="https://apollo-theme.github.io/#app-xcode-light"><img alt="Simulated preview of Apollo Light in Xcode" src="https://raw.githubusercontent.com/apollo-theme/apollo-theme.github.io/main/previews/xcode-light.svg" width="960"></a>
 </p>
 <p align="center"><sub><strong>Simulated preview.</strong> Xcode chrome and typography may vary; inspect the installed native theme using the checks below.</sub></p>
 
@@ -29,35 +30,36 @@ Quit Xcode, then install the theme:
 
 ```sh
 mkdir -p ~/Library/Developer/Xcode/UserData/FontAndColorThemes
-cp Apollo.xccolortheme ~/Library/Developer/Xcode/UserData/FontAndColorThemes/
+cp Apollo.xccolortheme "Apollo Light.xccolortheme" ~/Library/Developer/Xcode/UserData/FontAndColorThemes/
 ```
 
-Open Xcode and select **Settings → Themes → Apollo**. The file adds a color theme only; it does not edit Xcode preferences.
+Open Xcode and select **Settings → Themes → Apollo** or **Apollo Light**. The file adds a color theme only; it does not edit Xcode preferences.
 
 ## Visual verification
 
-Inspect Swift, Objective-C/C, strings, numbers, comments, documentation comments, types, functions, macros, and URLs. Also inspect the debugger console, selection, current line, insertion point, warnings, errors, and runtime issues. Primary source should be `#cfbc97` on `#141617`, comments `#928374`, and warning/error markers `#fabd2f`/`#fb4934`.
+Inspect Swift, Objective-C/C, strings, numbers, comments, documentation comments, types, functions, macros, and URLs. Also inspect the debugger console, selection, current line, insertion point, warnings, errors, and runtime issues. Apollo source should be `#cfbc97` on `#141617`; Apollo Light should be `#3c3836` on `#f9f5d7`. In both, verify comments, warnings/errors, markup, and debugger colors remain readable and semantically distinct.
 
 ## Uninstall
 
 Quit Xcode and remove the theme file:
 
 ```sh
-rm ~/Library/Developer/Xcode/UserData/FontAndColorThemes/Apollo.xccolortheme
+rm ~/Library/Developer/Xcode/UserData/FontAndColorThemes/Apollo.xccolortheme \
+  ~/Library/Developer/Xcode/UserData/FontAndColorThemes/'Apollo Light.xccolortheme'
 ```
 
 Reopen Xcode and choose another theme if needed.
 
 ## Develop and validate
 
-The committed theme is generated from `palette/apollo.json` using only Python's standard library. Its 28 syntax roles mirror the installed Xcode 26 theme schema.
+Both committed themes are generated from their matching palette snapshots using only Python's standard library. Their 28 syntax roles mirror the installed Xcode 26 theme schema.
 
 ```sh
 python3 scripts/generate.py
 python3 scripts/generate.py --check
 python3 scripts/check.py
 python3 -m unittest tests.test_theme.XcodeThemeTests.test_xcode_26_syntax_role_map -v
-plutil -lint Apollo.xccolortheme
+plutil -lint Apollo.xccolortheme "Apollo Light.xccolortheme"
 ```
 
 ## License

@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-THEME = ROOT / "Apollo.xccolortheme"
+THEMES = (ROOT / "Apollo.xccolortheme", ROOT / "Apollo Light.xccolortheme")
 
 
 def run(command: list[str]) -> None:
@@ -21,11 +21,14 @@ def run(command: list[str]) -> None:
 
 def main() -> int:
     json.loads((ROOT / "palette" / "apollo.json").read_text(encoding="utf-8"))
-    plistlib.loads(THEME.read_bytes())
+    json.loads((ROOT / "palette" / "apollo-light.json").read_text(encoding="utf-8"))
+    for theme in THEMES:
+        plistlib.loads(theme.read_bytes())
     run([sys.executable, "scripts/generate.py", "--check"])
     run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"])
     if sys.platform == "darwin":
-        run(["plutil", "-lint", str(THEME)])
+        for theme in THEMES:
+            run(["plutil", "-lint", str(theme)])
     print("all checks passed")
     return 0
 

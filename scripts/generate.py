@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import plistlib
 import re
@@ -12,8 +13,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PALETTE_PATH = ROOT / "palette" / "apollo.json"
-OUTPUT_PATH = ROOT / "Apollo.xccolortheme"
+PALETTE_SHA256 = {
+    "apollo": "550f8c36cf4ef6ac99551541d1fe9554f77d563fa1e7c129a6a82583321d61ef",
+    "apollo-light": "b0dbdeb719ed1931c424e9590562689325ecac1609e2fed6406ec5c4d3dc5763",
+}
+VARIANTS = {
+    "apollo": ("dark", ROOT / "palette" / "apollo.json", ROOT / "Apollo.xccolortheme"),
+    "apollo-light": ("light", ROOT / "palette" / "apollo-light.json", ROOT / "Apollo Light.xccolortheme"),
+}
 HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 SYNTAX_COLOR_KEYS = {
@@ -65,10 +72,17 @@ MEDIUM_SYNTAX_ROLES = {
 }
 
 
-def load_palette() -> dict:
-    palette = json.loads(PALETTE_PATH.read_text(encoding="utf-8"))
-    if palette.get("id") != "apollo" or palette.get("colorSpace") != "srgb":
-        raise ValueError("palette snapshot must describe Apollo in sRGB")
+def load_palette(variant: str) -> dict:
+    appearance, palette_path, _ = VARIANTS[variant]
+    palette_bytes = palette_path.read_bytes()
+    digest = hashlib.sha256(palette_bytes).hexdigest()
+    if digest != PALETTE_SHA256[variant]:
+        raise ValueError(f"{palette_path.relative_to(ROOT)} differs from canonical SHA-256: {digest}")
+    palette = json.loads(palette_bytes)
+    if palette.get("schemaVersion") != 1 or palette.get("id") != variant:
+        raise ValueError(f"{palette_path.relative_to(ROOT)} has invalid identity")
+    if palette.get("appearance") != appearance or palette.get("colorSpace") != "srgb":
+        raise ValueError(f"{palette_path.relative_to(ROOT)} must be the {appearance} sRGB variant")
     return palette
 
 
@@ -165,16 +179,36 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    generated = render(load_palette())
+    try:
+        outputs = {
+            output_path: render(load_palette(variant))
+            for variant, (_, _, output_path) in VARIANTS.items()
+        }
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        print(f"generation failed: {error}", file=sys.stderr)
+        return 2
+
+    unexpected = sorted(set(ROOT.glob("*.xccolortheme")) - set(outputs))
+    if unexpected:
+        for path in unexpected:
+            print(f"unexpected generated output: {path.name}", file=sys.stderr)
+        return 1
+
+    stale = [
+        path for path, generated in outputs.items()
+        if not path.exists() or path.read_bytes() != generated
+    ] if args.check else []
+    if stale:
+        for path in stale:
+            print(f"out of date: {path.name}", file=sys.stderr)
+        return 1
     if args.check:
-        if not OUTPUT_PATH.exists() or OUTPUT_PATH.read_bytes() != generated:
-            print(f"out of date: {OUTPUT_PATH.name}", file=sys.stderr)
-            return 1
-        print(f"up to date: {OUTPUT_PATH.name}")
+        print("up to date: " + ", ".join(path.name for path in outputs))
         return 0
 
-    OUTPUT_PATH.write_bytes(generated)
-    print(f"generated: {OUTPUT_PATH.name}")
+    for path, generated in outputs.items():
+        path.write_bytes(generated)
+        print(f"generated: {path.name}")
     return 0
 
 

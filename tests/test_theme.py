@@ -1,6 +1,8 @@
 import hashlib
 import json
 import plistlib
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -57,6 +59,31 @@ class XcodeThemeTests(unittest.TestCase):
     def test_palette_snapshot_is_canonical(self):
         self.assertEqual(hashlib.sha256(self.palette_bytes).hexdigest(), PALETTE_SHA256)
 
+    def test_generated_themes_are_current(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "generate.py"), "--check"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_check_rejects_unexpected_generated_output(self):
+        unexpected = ROOT / "Unexpected.xccolortheme"
+        unexpected.write_bytes(plistlib.dumps({}))
+        try:
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "generate.py"), "--check"],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+        finally:
+            unexpected.unlink()
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
     def test_xcode_26_syntax_role_map(self):
         syntax_colors = self.theme["DVTSourceTextSyntaxColors"]
         syntax_fonts = self.theme["DVTSourceTextSyntaxFonts"]
@@ -73,6 +100,19 @@ class XcodeThemeTests(unittest.TestCase):
         self.assertEqual(rgba_hex(self.theme["DVTScrollbarMarkerDiffConflictColor"]), colors["danger"])
         self.assertEqual(rgba_hex(self.theme["DVTScrollbarMarkerWarningColor"]), colors["accent"])
         self.assertEqual(rgba_hex(self.theme["DVTConsoleDebuggerPromptTextColor"]), colors["success"])
+
+    def test_light_variant_contract(self):
+        palette_path = ROOT / "palette" / "apollo-light.json"
+        self.assertEqual(
+            hashlib.sha256(palette_path.read_bytes()).hexdigest(),
+            "b0dbdeb719ed1931c424e9590562689325ecac1609e2fed6406ec5c4d3dc5763",
+        )
+        palette = json.loads(palette_path.read_text(encoding="utf-8"))
+        theme = plistlib.loads((ROOT / "Apollo Light.xccolortheme").read_bytes())
+        self.assertEqual((palette["id"], palette["appearance"]), ("apollo-light", "light"))
+        self.assertEqual(rgba_hex(theme["DVTSourceTextBackground"]), palette["colors"]["background"])
+        self.assertEqual(set(theme["DVTSourceTextSyntaxColors"]), XCODE_26_SYNTAX_ROLES)
+        self.assertEqual(set(theme), set(self.theme))
 
     def test_restricted_bright_black_is_not_used_for_xcode_text(self):
         restricted = self.palette["colors"]["ansiBrightBlack"]
