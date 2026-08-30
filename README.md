@@ -17,6 +17,8 @@
 </p>
 <p align="center"><sub><strong>Simulated preview.</strong> Xcode chrome and typography may vary; inspect the installed native theme using the checks below.</sub></p>
 
+The public **Apollo Dark** variant keeps the existing unsuffixed identity in `Apollo.xccolortheme`; **Apollo Light** keeps its existing light identity in `Apollo Light.xccolortheme`.
+
 ## Coverage
 
 - Xcode 26 source, markup, and debugger-console surfaces.
